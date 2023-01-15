@@ -1,0 +1,408 @@
+{
+	"info": {
+		"_postman_id": "a52daa92-ae8b-4bde-96dc-16059ec23052",
+		"name": "SharepointSites-AdminApp",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "9778069"
+	},
+	"item": [
+		{
+			"name": "Get Access Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var res = pm.response.json();\r",
+							"pm.environment.set('bearerToken', res.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{clientId}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{secretId}}",
+							"type": "text"
+						},
+						{
+							"key": "scope",
+							"value": "https://graph.microsoft.com/.default",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token",
+					"protocol": "https",
+					"host": [
+						"login",
+						"microsoftonline",
+						"com"
+					],
+					"path": [
+						"{{tenantId}}",
+						"oauth2",
+						"v2.0",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "1) Get SharePoint site Id",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var res = pm.response.json();\r",
+							"pm.collectionVariables.set('TARGET_Application_siteId', res.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_hostName}}.sharepoint.com:/sites/{{TARGET_Application_site}}?$select=id,webUrl,displayName",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_hostName}}.sharepoint.com:",
+						"sites",
+						"{{TARGET_Application_site}}"
+					],
+					"query": [
+						{
+							"key": "$select",
+							"value": "id,webUrl,displayName"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "2) Set permissions for site",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"roles\": [\r\n        \"{{TARGET_Application_roles}}\"\r\n    ],\r\n    \"grantedToIdentities\": [\r\n        {\r\n            \"application\": {\r\n                \"id\": \"{{TARGET_Application_clientId}}\",\r\n                \"displayName\": \"{{TARGET_Application_displayName}}\"\r\n            }\r\n        }\r\n    ]\r\n}"
+				},
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_siteId}}/permissions",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_siteId}}",
+						"permissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3a) List permissions for site",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_siteId}}/permissions",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_siteId}}",
+						"permissions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3b) Get permissions for site",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_siteId}}/permissions/",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_siteId}}",
+						"permissions",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "3c) Update permissions for site",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"roles\": [\"read\"]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_siteId}}/permissions/{permissionId}",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_siteId}}",
+						"permissions",
+						"{permissionId}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "9) Remove permissions for site",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "default"
+					}
+				],
+				"url": {
+					"raw": "https://graph.microsoft.com/v1.0/sites/{{TARGET_Application_siteId}}/permissions/{permissionId}",
+					"protocol": "https",
+					"host": [
+						"graph",
+						"microsoft",
+						"com"
+					],
+					"path": [
+						"v1.0",
+						"sites",
+						"{{TARGET_Application_siteId}}",
+						"permissions",
+						"{permissionId}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "oauth2",
+		"oauth2": [
+			{
+				"key": "tokenType",
+				"value": "Bearer",
+				"type": "string"
+			},
+			{
+				"key": "accessToken",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "clientSecret",
+				"value": "{{AdminApp_secretId}}",
+				"type": "string"
+			},
+			{
+				"key": "clientId",
+				"value": "{{AdminApp_clientId}}",
+				"type": "string"
+			},
+			{
+				"key": "grant_type",
+				"value": "client_credentials",
+				"type": "string"
+			},
+			{
+				"key": "client_authentication",
+				"value": "body",
+				"type": "string"
+			},
+			{
+				"key": "scope",
+				"value": "https://graph.microsoft.com/.default",
+				"type": "string"
+			},
+			{
+				"key": "redirect_uri",
+				"value": "",
+				"type": "string"
+			},
+			{
+				"key": "accessTokenUrl",
+				"value": "https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token",
+				"type": "string"
+			},
+			{
+				"key": "authUrl",
+				"value": "https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token",
+				"type": "string"
+			},
+			{
+				"key": "addTokenTo",
+				"value": "header",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "TARGET_Application_clientId",
+			"value": "Application Id",
+			"type": "default"
+		},
+		{
+			"key": "TARGET_Application_displayName",
+			"value": "Application display name",
+			"type": "default"
+		},
+		{
+			"key": "TARGET_Application_site",
+			"value": "Site url/name (like CitDevBlog)",
+			"type": "default"
+		},
+		{
+			"key": "TARGET_Application_roles",
+			"value": "read or write",
+			"type": "default"
+		},
+		{
+			"key": "TARGET_Application_hostName",
+			"value": "tenant name",
+			"type": "default"
+		},
+		{
+			"key": "TARGET_Application_siteId",
+			"value": "SiteId from MS Graph (no edit)",
+			"type": "default"
+		},
+		{
+			"key": "tenantId",
+			"value": "guid",
+			"type": "default"
+		},
+		{
+			"key": "AdminApp_clientId",
+			"value": "guid",
+			"type": "default"
+		},
+		{
+			"key": "AdminApp_secretId",
+			"value": "Secret value id",
+			"type": "default"
+		}
+	]
+}
